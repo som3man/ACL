@@ -13,7 +13,7 @@ import :Traits;
 
 namespace ACL {
     export struct SearchResult {
-        u32 index;
+        size index;
 
         bool found;
 
@@ -26,7 +26,7 @@ namespace ACL {
     class Range {
         Type* data = nullptr;
 
-        u32 length = 0;
+        size length = 0;
 
     public:
         friend Optional<Range<Type>>;
@@ -47,8 +47,8 @@ namespace ACL {
             return Range<const Type>(data, 0, length);
         }
 
-        constexpr Range(const Range& range, u32 start, u32 length) noexcept {
-            if (length == u32max)
+        constexpr Range(const Range& range, size start, size length) noexcept {
+            if (length == sizemax)
                 length = 0;
 
             if (!range || !length || start >= range.length)
@@ -62,15 +62,15 @@ namespace ACL {
             this->length = length;
         }
 
-        template <u32 capacity> requires(capacity != 0 && capacity != u32max)
+        template <size capacity> requires(capacity != 0 && capacity != sizemax)
         constexpr Range(Type (&array)[capacity]) noexcept {
             data = array;
 
             length = capacity;
         }
 
-        constexpr Range(Type* array, u32 length) noexcept {
-            if (length == u32max)
+        constexpr Range(Type* array, size length) noexcept {
+            if (length == sizemax)
                 length = 0;
 
             if (!array || !length)
@@ -97,7 +97,7 @@ namespace ACL {
             return data;
         }
 
-        [[nodiscard]] constexpr Optional<Type&> operator [](u32 index) const noexcept {
+        [[nodiscard]] constexpr Optional<Type&> operator [](size index) const noexcept {
             if (index < length)
                 return data[index];
 
@@ -112,19 +112,19 @@ namespace ACL {
             return data + length;
         }
 
-        [[nodiscard]] constexpr u32 getLength() const noexcept {
+        [[nodiscard]] constexpr size getLength() const noexcept {
             return length;
         }
 
-        [[nodiscard]] constexpr Range range(u32 start, u32 length) const noexcept {
+        [[nodiscard]] constexpr Range range(size start, size length) const noexcept {
             return Range(*this, start, length);
         }
 
-        [[nodiscard]] constexpr Range rangeTo(u32 index) const noexcept {
+        [[nodiscard]] constexpr Range rangeTo(size index) const noexcept {
             return range(0, index);
         }
 
-        [[nodiscard]] constexpr Range rangeFrom(u32 index) const noexcept {
+        [[nodiscard]] constexpr Range rangeFrom(size index) const noexcept {
             return range(index, length - index);
         }
 
@@ -140,7 +140,7 @@ namespace ACL {
             if (isVoid())
                 return { 0, false };
 
-            u32 middle = length / 2;
+            size middle = length / 2;
 
             if (value == data[middle])
                 return { middle, true };
@@ -239,7 +239,7 @@ namespace ACL {
 
     public:
         constexpr Optional() noexcept {
-            range.length = u32max;
+            range.length = sizemax;
         }
 
         template <typename... Args> requires(hasConstructor<Range<Type>, Args...>)
@@ -263,11 +263,11 @@ namespace ACL {
         constexpr void Destruct() noexcept {
             range.data = nullptr;
 
-            range.length = u32max;
+            range.length = sizemax;
         }
 
         [[nodiscard]] constexpr bool isVoid() const noexcept {
-            return range.length == u32max;
+            return range.length == sizemax;
         }
 
         [[nodiscard]] constexpr operator bool() const noexcept {

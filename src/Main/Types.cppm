@@ -48,9 +48,11 @@ export namespace ACL {
 
     constexpr u64 u64max = UINT64_MAX;
 
+    using size = std::size_t;
+
+    constexpr size sizemax = SIZE_MAX;
+
     using f32 = float;
 
     using f64 = double;
-
-    using size = u64;
 }

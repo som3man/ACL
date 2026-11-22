@@ -17,7 +17,7 @@ namespace ACL {
     public:
         class View;
 
-        template <u32 capacity> requires(capacity > 0)
+        template <size capacity> requires(capacity > 0)
         constexpr String(const char (&cstring)[capacity]) noexcept {
             if (cstring[capacity - 1])
                 array.EmplaceBackMany(capacity + 1, '\0');
@@ -27,7 +27,7 @@ namespace ACL {
             std::copy(cstring, cstring + capacity, array.begin());
         }
 
-        constexpr String(const char* cstring, u32 length) noexcept {
+        constexpr String(const char* cstring, size length) noexcept {
             if (!cstring || !length)
                 return;
 
@@ -83,7 +83,7 @@ namespace ACL {
             array.EmplaceBack('\0');
         }
 
-        constexpr void EraseBack(u32 count = 1) {
+        constexpr void EraseBack(size count = 1) {
             if (!count)
                 return;
 
@@ -95,7 +95,7 @@ namespace ACL {
                 array.EmplaceBack('\0');
         }
 
-        constexpr char& EmplaceStrict(u32 index, char symbol) {
+        constexpr char& EmplaceStrict(size index, char symbol) {
             array.EraseBack();
 
             array.EmplaceStrict(index, symbol);
@@ -105,7 +105,7 @@ namespace ACL {
             return array.begin()[index];
         }
 
-        constexpr void EmplaceStrictMany(u32 index, u32 count, char symbol) {
+        constexpr void EmplaceStrictMany(size index, u32 count, char symbol) {
             if (!count)
                 return;
 
@@ -116,7 +116,7 @@ namespace ACL {
             array.EmplaceBack('\0');
         }
 
-        constexpr void EraseStrict(u32 index, u32 count = 1) {
+        constexpr void EraseStrict(size index, size count = 1) {
             if (!count)
                 return;
 
@@ -127,7 +127,7 @@ namespace ACL {
             array.EmplaceBack('\0');
         }
 
-        constexpr void Insert(u32 index, const View& view);
+        constexpr void Insert(size index, const View& view);
 
         constexpr void Clear() {
             array.Clear();
@@ -139,11 +139,11 @@ namespace ACL {
             array.ShrinkToFit();
         }
 
-        [[nodiscard]] constexpr u32 getCapacity() const noexcept {
+        [[nodiscard]] constexpr size getCapacity() const noexcept {
             return array.getCapacity();
         }
 
-        [[nodiscard]] constexpr u32 getLength() const noexcept {
+        [[nodiscard]] constexpr size getLength() const noexcept {
             return array ? array.getLength() - 1 : 0;
         }
 
@@ -171,14 +171,14 @@ namespace ACL {
             return begin() + getLength();
         }
 
-        [[nodiscard]] constexpr Optional<char&> operator [](u32 index) noexcept {
+        [[nodiscard]] constexpr Optional<char&> operator [](size index) noexcept {
             if (index < getLength())
                 return array.begin()[index];
 
             return {};
         }
 
-        [[nodiscard]] constexpr Optional<const char&> operator [](u32 index) const noexcept {
+        [[nodiscard]] constexpr Optional<const char&> operator [](size index) const noexcept {
             if (index < getLength())
                 return array.begin()[index];
 
@@ -187,11 +187,11 @@ namespace ACL {
 
         [[nodiscard]] constexpr View range() const noexcept;
 
-        [[nodiscard]] constexpr View range(u32 start, u32 length) const noexcept;
+        [[nodiscard]] constexpr View range(size start, size length) const noexcept;
 
-        [[nodiscard]] constexpr View rangeTo(u32 index) const noexcept;
+        [[nodiscard]] constexpr View rangeTo(size index) const noexcept;
 
-        [[nodiscard]] constexpr View rangeFrom(u32 index) const noexcept;
+        [[nodiscard]] constexpr View rangeFrom(size index) const noexcept;
 
         [[nodiscard]] constexpr bool operator ==(const View& other) const noexcept;
 
@@ -218,7 +218,7 @@ namespace ACL {
         bool operator >(bool) const = delete;
 
         constexpr String& operator +=(const View& view) {
-            Insert(u32max, view);
+            Insert(sizemax, view);
 
             return *this;
         }
@@ -252,7 +252,7 @@ namespace ACL {
 
         constexpr View& operator =(View&& other) noexcept = default;
 
-        template <u32 capacity> requires(capacity > 0)
+        template <size capacity> requires(capacity > 0)
         constexpr View(const char (&array)[capacity]) noexcept {
             bool nullTerm = true;
 
@@ -265,7 +265,7 @@ namespace ACL {
             };
         }
 
-        constexpr View(const char* cstring, u32 length) noexcept {
+        constexpr View(const char* cstring, size length) noexcept {
             data = {
                 cstring,
                 length
@@ -282,7 +282,7 @@ namespace ACL {
             return data.end();
         }
 
-        [[nodiscard]] constexpr u32 getLength() const noexcept {
+        [[nodiscard]] constexpr size getLength() const noexcept {
             return data.getLength();
         }
 
@@ -294,22 +294,22 @@ namespace ACL {
             return data;
         }
 
-        [[nodiscard]] constexpr Optional<char> operator [](u32 index) const noexcept {
+        [[nodiscard]] constexpr Optional<char> operator [](size index) const noexcept {
             if (index < getLength())
                 return begin()[index];
 
             return {};
         }
 
-        [[nodiscard]] constexpr View range(u32 start, u32 length) const noexcept {
+        [[nodiscard]] constexpr View range(size start, size length) const noexcept {
             return data.range(start, length);
         }
 
-        [[nodiscard]] constexpr View rangeTo(u32 index) const noexcept {
+        [[nodiscard]] constexpr View rangeTo(size index) const noexcept {
             return data.rangeTo(index);
         }
 
-        [[nodiscard]] constexpr View rangeFrom(u32 index) const noexcept {
+        [[nodiscard]] constexpr View rangeFrom(size index) const noexcept {
             return data.rangeFrom(index);
         }
 
@@ -317,7 +317,7 @@ namespace ACL {
             if (getLength() != other.getLength())
                 return false;
 
-            for (u32 i = 0; i < getLength(); i++)
+            for (size i = 0; i < getLength(); i++)
                 if (begin()[i] != other.begin()[i])
                     return false;
 
@@ -335,7 +335,7 @@ namespace ACL {
             if (getLength() < other.getLength())
                 return false;
 
-            for (u32 i = 0; i < getLength(); i++)
+            for (size i = 0; i < getLength(); i++)
                 if (begin()[i] != other.begin()[i])
                     return begin()[i] > other.begin()[i];
 
@@ -353,7 +353,7 @@ namespace ACL {
             if (getLength() > other.getLength())
                 return false;
 
-            for (u32 i = 0; i < getLength(); i++)
+            for (size i = 0; i < getLength(); i++)
                 if (begin()[i] != other.begin()[i])
                     return begin()[i] < other.begin()[i];
 
@@ -406,7 +406,7 @@ namespace ACL {
             array.EmplaceBack('\0');
     }
 
-    constexpr void String::Insert(u32 index, const View& view) {
+    constexpr void String::Insert(size index, const View& view) {
         array.EraseBack();
 
         array.Insert(index, view.data);
@@ -419,15 +419,15 @@ namespace ACL {
         return String::View(*this);
     }
 
-    constexpr String::View String::range(u32 start, u32 length) const noexcept {
+    constexpr String::View String::range(size start, size length) const noexcept {
         return range().range(start, length);
     }
 
-    constexpr String::View String::rangeTo(u32 index) const noexcept {
+    constexpr String::View String::rangeTo(size index) const noexcept {
         return range().rangeTo(index);
     }
 
-    constexpr String::View String::rangeFrom(u32 index) const noexcept {
+    constexpr String::View String::rangeFrom(size index) const noexcept {
         return range().rangeFrom(index);
     }
 
@@ -465,7 +465,7 @@ namespace ACL {
         return string += view;
     }
 
-    export template <u32 capacity>
+    export template <size capacity>
     constexpr String& operator <<(String& string, const char (&cstring)[capacity]) {
         return string << String::View(cstring);
     }

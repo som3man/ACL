@@ -20,22 +20,22 @@ namespace ACL {
     class Array {
         Type* data = nullptr;
 
-        u32 length = 0;
+        size length = 0;
 
-        u32 capacity = 0;
+        size capacity = 0;
 
-        constexpr void ShiftRight(u32 index, u32 amount, bool destruct = true) {
-            u32 newLength = length + amount;
+        constexpr void ShiftRight(size index, size amount, bool destruct = true) {
+            size newLength = length + amount;
 
             if (capacity * 2 < newLength)
                 Expand(newLength - length);
             else if (capacity < newLength)
                 Expand();
 
-            for (u32 i = 1; i <= amount; i++)
+            for (size i = 1; i <= amount; i++)
                 std::construct_at(data + newLength - i, Move(data[length - i]));
 
-            for (u32 i = length - 1; i >= index + amount; i--) {
+            for (size i = length - 1; i >= index + amount; i--) {
                 if constexpr (hasAssignment<Type, Type&&>) {
                     data[i] = Move(data[i - amount]);
                 }
@@ -47,18 +47,18 @@ namespace ACL {
             }
 
             if (destruct)
-                for (u32 i = index; i < index + amount; i++)
+                for (size i = index; i < index + amount; i++)
                     data[i].~Type();
 
             length = newLength;
         }
 
-        constexpr void ShiftLeft(u32 index, u32 amount, bool destruct = true) {
-            u32 newLength = length - amount;
+        constexpr void ShiftLeft(size index, size amount, bool destruct = true) {
+            size newLength = length - amount;
 
-            u32 newIndex = index - amount;
+            size newIndex = index - amount;
 
-            for (u32 i = newIndex; i < newLength; i++) {
+            for (size i = newIndex; i < newLength; i++) {
                 if constexpr (hasAssignment<Type, Type&&>) {
                     data[i] = Move(data[i + amount]);
                 }
@@ -69,14 +69,14 @@ namespace ACL {
                 }
             }
 
-            for (u32 i = newLength; i < length; i++)
+            for (size i = newLength; i < length; i++)
                 data[i].~Type();
 
             length = newLength;
         }
 
         template <typename Val, typename... Other>
-        constexpr void InitItems(u32 index, Val&& val, Other&&... other) {
+        constexpr void InitItems(size index, Val&& val, Other&&... other) {
             std::construct_at(data + index, Forward(val));
 
             if constexpr (sizeof...(Other) != 0)
@@ -101,7 +101,7 @@ namespace ACL {
             length = sizeof...(Vals);
         }
 
-        template <u32 capacity2>
+        template <size capacity2>
         constexpr Array(const Type (&array)[capacity2]) {
             Allocate(capacity2);
 
@@ -112,7 +112,7 @@ namespace ACL {
             }
         }
 
-        template <u32 capacity2>
+        template <size capacity2>
         constexpr Array(Type (&&array)[capacity2]) {
             Allocate(capacity2);
 
@@ -182,17 +182,17 @@ namespace ACL {
             }
             else {
                 if (length < other.getLength()) {
-                    for (u32 i = 0; i < length; i++)
+                    for (size i = 0; i < length; i++)
                         data[i] = other.begin()[i];
 
-                    for (u32 i = length; i < other.getLength(); i++)
+                    for (size i = length; i < other.getLength(); i++)
                         std::construct_at(data + i, other.begin()[i]);
                 }
                 else {
-                    for (u32 i = 0; i < other.getLength(); i++)
+                    for (size i = 0; i < other.getLength(); i++)
                         data[i] = other.begin()[i];
 
-                    for (u32 i = other.getLength(); i < length; i++)
+                    for (size i = other.getLength(); i < length; i++)
                         data[i].~Type();
                 }
 
@@ -215,7 +215,7 @@ namespace ACL {
         }
 
         // Frees old and allocates new memory.
-        constexpr void Allocate(u32 capacity) {
+        constexpr void Allocate(size capacity) {
             Free();
 
             if (!capacity)
@@ -229,7 +229,7 @@ namespace ACL {
         }
 
         // Increases Arrays capacity.
-        constexpr void Expand(u32 count = 0) requires(hasConstructor<Type, Type&&>) {
+        constexpr void Expand(size count = 0) requires(hasConstructor<Type, Type&&>) {
             if (!count)
                 return Expand(capacity ? capacity : 1);
 
@@ -240,7 +240,7 @@ namespace ACL {
 
             auto newData = alloc.allocate(capacity + count);
 
-            for (u32 i = 0; i < length; i++) {
+            for (size i = 0; i < length; i++) {
                 std::construct_at(newData + i, Move(data[i]));
 
                 data[i].~Type();
@@ -277,7 +277,7 @@ namespace ACL {
 
             auto newData = alloc.allocate(length);
 
-            for (u32 i = 0; i < length; i++)
+            for (size i = 0; i < length; i++)
                 std::construct_at(newData + i, Move(data[i]));
 
             alloc.deallocate(data, capacity);
@@ -304,7 +304,7 @@ namespace ACL {
             if (!count)
                 return;
 
-            u32 newLength = length + count;
+            size newLength = length + count;
 
             if (capacity * 2 < newLength)
                 Expand(newLength - length);
@@ -322,7 +322,7 @@ namespace ACL {
 
         // Destructs data at the back.
         // Does nothing if count > length.
-        constexpr void EraseBack(u32 count = 1) {
+        constexpr void EraseBack(size count = 1) {
             if (count > length)
                 count = length;
 
@@ -339,7 +339,7 @@ namespace ACL {
         // If index < length, emplaces data saving Array's order.
         // If index > length, emplaces data at the index and initializes data with same arguments in between.
         template <typename... Args> requires(hasConstructor<Type, Args...> && hasConstructor<Type, Type&&>)
-        constexpr Type& EmplaceStrict(u32 index, Args&&... args) {
+        constexpr Type& EmplaceStrict(size index, Args&&... args) {
             if (index == length)
                 return EmplaceBack(Forward<Args>(args)...);
 
@@ -360,7 +360,7 @@ namespace ACL {
         // If index < length, emplaces data saving Array's order.
         // If index > length, emplaces data and initializes all data with same arguments in between.
         template <typename... Args> requires(hasConstructor<Type, Args...> && hasConstructor<Type, Type&&>)
-        constexpr void EmplaceStrictMany(u32 index, u32 count, Args&&... args) {
+        constexpr void EmplaceStrictMany(size index, u32 count, Args&&... args) {
             if (!count)
                 return;
 
@@ -370,7 +370,7 @@ namespace ACL {
             if (index < length) {
                 ShiftRight(index, count);
 
-                for (u32 i = index; i < index + count; i++)
+                for (size i = index; i < index + count; i++)
                     std::construct_at(data + i, Forward<Args>(args)...);
 
                 return;
@@ -381,7 +381,7 @@ namespace ACL {
 
         // Erases data by index saving Arrays order.
         // Does nothing if count == 0 or index is out of bounds.
-        constexpr void EraseStrict(u32 index, u32 count = 1) requires(hasConstructor<Type, Type&&>) {
+        constexpr void EraseStrict(size index, size count = 1) requires(hasConstructor<Type, Type&&>) {
             if (!count || index >= length)
                 return;
 
@@ -393,11 +393,11 @@ namespace ACL {
 
         // Emplaces all data from range at index saving Arrays order.
         // Emplaces all data fat the back if index is out of bounds.
-        constexpr void Insert(u32 index, const Range<const Type>& range) requires(hasConstructor<Type, Type&&> && hasConstructor<Type, const Type&>) {
+        constexpr void Insert(size index, const Range<const Type>& range) requires(hasConstructor<Type, Type&&> && hasConstructor<Type, const Type&>) {
             if (!range)
                 return;
 
-            u32 newLength = length + range.getLength();
+            size newLength = length + range.getLength();
 
             if (capacity * 2 < newLength)
                 Expand(newLength - capacity);
@@ -405,7 +405,7 @@ namespace ACL {
                 Expand();
 
             if (index >= length) {
-                for (u32 i = 0; i < range.getLength(); i++)
+                for (size i = 0; i < range.getLength(); i++)
                     std::construct_at(data + length + i, range.begin()[i]);
 
                 length = newLength;
@@ -416,24 +416,24 @@ namespace ACL {
             if constexpr (hasAssignment<Type, const Type&>) {
                 ShiftRight(index, range.getLength(), false);
 
-                for (u32 i = 0; i < range.getLength(); i++)
+                for (size i = 0; i < range.getLength(); i++)
                     data[i + index] = range.begin()[i];
             }
             else {
                 ShiftRight(index, range.getLength(), true);
 
-                for (u32 i = 0; i < range.getLength(); i++)
+                for (size i = 0; i < range.getLength(); i++)
                     std::construct_at(data + index + i, range.begin()[i]);
             }
         }
 
         // Emplaces all data from range at index saving Arrays order.
         // Emplaces all data fat the back if index is out of bounds.
-        constexpr void Insert(u32 index, const Range<Type>&& range) requires(hasConstructor<Type, Type&&>) {
+        constexpr void Insert(size index, const Range<Type>&& range) requires(hasConstructor<Type, Type&&>) {
             if (!range)
                 return;
 
-            u32 newLength = length + range.getLength();
+            size newLength = length + range.getLength();
 
             if (capacity * 2 < newLength)
                 Expand(newLength - capacity);
@@ -441,7 +441,7 @@ namespace ACL {
                 Expand();
 
             if (index >= length) {
-                for (u32 i = 0; i < range.getLength(); i++)
+                for (size i = 0; i < range.getLength(); i++)
                     std::construct_at(data + length + i, Move(range.begin()[i]));
 
                 length = newLength;
@@ -452,13 +452,13 @@ namespace ACL {
             if constexpr (hasAssignment<Type, Type&&>) {
                 ShiftRight(index, range.getLength(), false);
 
-                for (u32 i = 0; i < range.getLength(); i++)
+                for (size i = 0; i < range.getLength(); i++)
                     data[i + index] = Move(range.begin()[i]);
             }
             else {
                 ShiftRight(index, range.getLength(), true);
 
-                for (u32 i = 0; i < range.getLength(); i++)
+                for (size i = 0; i < range.getLength(); i++)
                     std::construct_at(data + index + i, Move(range.begin()[i]));
             }
         }
@@ -481,7 +481,7 @@ namespace ACL {
             return Range<Type>(data, length);
         }
 
-        [[nodiscard]] constexpr Range<Type> range(u32 start, u32 length) noexcept {
+        [[nodiscard]] constexpr Range<Type> range(size start, size length) noexcept {
             return range().range(start, length);
         }
 
@@ -489,32 +489,32 @@ namespace ACL {
             return Range<const Type>(data, length);
         }
 
-        [[nodiscard]] constexpr Range<const Type> range(u32 start, u32 length) const noexcept {
+        [[nodiscard]] constexpr Range<const Type> range(size start, size length) const noexcept {
             return range().range(start, length);
         }
 
         // Creates new range from 0 to index (not inclusive).
-        [[nodiscard]] constexpr Range<Type> rangeTo(u32 index) noexcept {
+        [[nodiscard]] constexpr Range<Type> rangeTo(size index) noexcept {
             return range().rangeTo(index);
         }
 
         // Creates new range from 0 to index (not inclusive).
-        [[nodiscard]] constexpr Range<const Type> rangeTo(u32 index) const noexcept {
+        [[nodiscard]] constexpr Range<const Type> rangeTo(size index) const noexcept {
             return range().rangeTo(index);
         }
 
         // Creates new range from index to the end.
-        [[nodiscard]] constexpr Range<Type> rangeFrom(u32 index) noexcept {
+        [[nodiscard]] constexpr Range<Type> rangeFrom(size index) noexcept {
             return range().rangeFrom(index);
         }
 
         // Creates new range from index to the end.
-        [[nodiscard]] constexpr Range<const Type> rangeFrom(u32 index) const noexcept {
+        [[nodiscard]] constexpr Range<const Type> rangeFrom(size index) const noexcept {
             return range().rangeFrom(index);
         }
 
         // Returns empty optional if index is out of bounds.
-        [[nodiscard]] constexpr Optional<Type&> operator [](u32 index) noexcept {
+        [[nodiscard]] constexpr Optional<Type&> operator [](size index) noexcept {
             if (index < length)
                 return data[index];
 
@@ -522,7 +522,7 @@ namespace ACL {
         }
 
         // Returns empty optional if index is out of bounds.
-        [[nodiscard]] constexpr Optional<const Type&> operator [](u32 index) const noexcept {
+        [[nodiscard]] constexpr Optional<const Type&> operator [](size index) const noexcept {
             if (index < length)
                 return data[index];
 
@@ -545,11 +545,11 @@ namespace ACL {
             return data + length;
         }
 
-        [[nodiscard]] constexpr u32 getLength() const noexcept {
+        [[nodiscard]] constexpr size getLength() const noexcept {
             return length;
         }
 
-        [[nodiscard]] constexpr u32 getCapacity() const noexcept {
+        [[nodiscard]] constexpr size getCapacity() const noexcept {
             return capacity;
         }
 
@@ -600,7 +600,7 @@ namespace ACL {
             if (other.length != length)
                 return false;
 
-            for (u32 i = 0; i < length; i++)
+            for (size i = 0; i < length; i++)
                 if (data[i] != other.data[i])
                     return false;
 
@@ -658,14 +658,14 @@ namespace ACL {
 
     public:
         constexpr Optional() noexcept {
-            array.length = u32max;
+            array.length = sizemax;
         }
 
         template <typename... Args> requires(hasConstructor<Array<Type>, Args...>)
         constexpr Optional(Args&&... args) : array(Forward<Args>(args)...) {};
 
         constexpr Optional(const Optional& other) {
-            array.length = u32max;
+            array.length = sizemax;
 
             other.Use([&](const Array<Type>& value) {
                 array.length = 0;
@@ -675,7 +675,7 @@ namespace ACL {
         }
 
         constexpr Optional(Optional&& other) {
-            array.length = u32max;
+            array.length = sizemax;
 
             other.Use([&](Array<Type>& value) {
                 array.length = 0;
@@ -732,7 +732,7 @@ namespace ACL {
             if (*this) {
                 array.Free();
 
-                array.length = u32max;
+                array.length = sizemax;
             }
         }
 
@@ -786,7 +786,7 @@ namespace ACL {
 
         // Returns true if Optional doesn't contain a value.
         [[nodiscard]] constexpr bool isVoid() const noexcept {
-            return array.length == u32max;
+            return array.length == sizemax;
         }
 
         // Returns true if Optional contains a value.

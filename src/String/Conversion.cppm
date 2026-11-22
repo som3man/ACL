@@ -16,16 +16,11 @@ namespace ACL {
         if (range) {
             string << range.begin()[0];
 
-            for (u32 i = 1; i < range.getLength(); i++)
+            for (size i = 1; i < range.getLength(); i++)
                 string << ", " << range.begin()[i];
         }
 
         return string << " }";
-    }
-
-    export template <typename Type, u32 capacity>
-    constexpr String& operator <<(String& string, const Type (&array)[capacity]) {
-        return string << Range(array);
     }
 
     export template <typename Type>
