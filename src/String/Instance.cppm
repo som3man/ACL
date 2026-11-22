@@ -509,7 +509,7 @@ namespace ACL {
 
     export constexpr String::View operator >>(String::View view, PassUntil::Number) noexcept {
         return view.PopFront([&](char symbol) -> u32 {
-            if (symbol < '0' && symbol > '9')
+            if (symbol < '0' || symbol > '9')
                 return 1;
 
             return 0;
@@ -518,16 +518,19 @@ namespace ACL {
 
     export constexpr String::View operator >>(String::View view, PassUntil::Char) noexcept {
         return view.PopFront([&](char symbol) -> u32 {
-            if ((symbol < 'a' && symbol > 'z') && (symbol < 'A' && symbol > 'Z'))
-                return 1;
+            if (symbol >= 'a' && symbol <= 'z')
+                return 0;
 
-            return 0;
+            if (symbol >= 'A' && symbol <= 'Z')
+                return 0;
+
+            return 1;
         });
     }
 
     export constexpr String::View operator >>(String::View view, PassUntil::CharLow) noexcept {
         return view.PopFront([&](char symbol) -> u32 {
-            if (symbol < 'a' && symbol > 'z')
+            if (symbol < 'a' || symbol > 'z')
                 return 1;
 
             return 0;
@@ -536,7 +539,7 @@ namespace ACL {
 
     export constexpr String::View operator >>(String::View view, PassUntil::CharHigh) noexcept {
         return view.PopFront([&](char symbol) -> u32 {
-            if (symbol < 'A' && symbol > 'Z')
+            if (symbol < 'A' || symbol > 'Z')
                 return 1;
 
             return 0;
