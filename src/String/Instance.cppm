@@ -17,21 +17,26 @@ namespace ACL {
     public:
         class View;
 
-        constexpr String() noexcept {};
+        template <u32 capacity> requires(capacity > 0)
+        constexpr String(const char (&cstring)[capacity]) noexcept {
+            if (cstring[capacity - 1])
+                array.EmplaceBackMany(capacity + 1, '\0');
+            else
+                array.EmplaceBackMany(capacity, '\0');
 
-        constexpr String(const char* cstring, u32 limit = 1024) {
-            if (!cstring || !limit)
+            std::copy(cstring, cstring + capacity, array.begin());
+        }
+
+        constexpr String(const char* cstring, u32 length) noexcept {
+            if (!cstring || !length)
                 return;
-
-            u32 length = 0;
-
-            while (length < limit && cstring[length] != '\0')
-                length += 1;
 
             array.EmplaceBackMany(length + 1, '\0');
 
             std::copy(cstring, cstring + length, array.begin());
         }
+
+        constexpr String() noexcept {};
 
         constexpr String(const String& other) : array(other.array) {};
 
@@ -249,14 +254,20 @@ namespace ACL {
 
         template <u32 capacity> requires(capacity > 0)
         constexpr View(const char (&array)[capacity]) noexcept {
-            u32 length = 0;
+            bool nullTerm = true;
 
-            while (length < capacity && array[length])
-                length += 1;
+            if (array[capacity - 1])
+                nullTerm = false;
 
             data = {
                 array,
-                0,
+                nullTerm ? capacity - 1 : capacity
+            };
+        }
+
+        constexpr View(const char* cstring, u32 length) noexcept {
+            data = {
+                cstring,
                 length
             };
         }
@@ -371,6 +382,22 @@ namespace ACL {
 
         [[nodiscard]] constexpr Optional<const char&> back() const noexcept {
             return data.back();
+        }
+
+        [[nodiscard]] constexpr String operator +(const View& other) const noexcept {
+            String result = *this;
+
+            result += other;
+
+            return result;
+        }
+
+        [[nodiscard]] constexpr Optional<size> NullTermPos() const noexcept {
+            for (size i = 0; i < getLength(); i++)
+                if (begin()[i] == '\0')
+                    return i;
+
+            return {};
         }
     };
 
