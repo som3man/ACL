@@ -23,6 +23,11 @@ namespace ACL {
         return string << " }";
     }
 
+    export template <typename Type, size capacity>
+    constexpr String& operator <<(String& string, const Many<Type, capacity>& many) {
+        return string << many.range();
+    }
+
     export template <typename Type>
     constexpr String& operator <<(String& string, const Array<Type>& array) {
         return string << array.range();
