@@ -10,6 +10,101 @@ import :Instance;
 
 namespace ACL {
     export template <typename Type>
+    struct ToString {};
+
+    template <typename Type> requires(isInteger<Type> && isUnsigned<Type>)
+    struct ToString<Type> {
+        Type value;
+
+        u8 base;
+    };
+
+    export template <typename Type> requires(isInteger<Type> && isUnsigned<Type>)
+    constexpr String& operator <<(String& string, ToString<Type> toString) {
+        if (!toString.value)
+            return string << '0';
+
+        if (toString.base < 2)
+            toString.base = 2;
+        else if (toString.base > 16)
+            toString.base = 16;
+
+        constexpr char syms[] = "0123456789ABCDEF";
+
+        char rstr[32] = {};
+
+        char* i = rstr;
+
+        while (toString.value && i < rstr + 32) {
+            *i = syms[toString.value % toString.base];
+
+            toString.value /= 10;
+
+            i += 1;
+        }
+
+        while (i != rstr) {
+            i -= 1;
+
+            string.EmplaceBack(*i);
+        }
+
+        return string;
+    }
+
+    export template <typename Type> requires(isInteger<Type>)
+    constexpr String& operator <<(String& string, Type number) {
+        if constexpr (isUnsigned<Type>)
+            return string << ToString<Type>(number, 10);
+        else {
+            if (number < 0) {
+                number = -number;
+
+                string << '-';
+            }
+
+            return string << static_cast<u64>(number);
+        }
+    }
+
+    export template <typename Type> requires(isInteger<Type>)
+    constexpr String::View operator >>(String::View string, Type& number) {
+        if (!string)
+            return string;
+
+        number = 0;
+
+        bool isNeg = false;
+
+        if (*string.front() == '-') {
+            if constexpr (isUnsigned<Type>)
+                return string;
+
+            isNeg = true;
+
+            string = string.rangeFrom(1);
+        }
+
+        string.PopFront([&](char symbol) -> u32 {
+            if (symbol < '0' || symbol > '9')
+                return 0;
+
+            number *= 10;
+
+            number += symbol - '0';
+
+            return 1;
+        });
+
+        if constexpr (!isUnsigned<Type>) {
+            if (isNeg)
+                number = -number;
+        }
+
+        return string;
+    }
+
+    export template <typename Type>
     constexpr String& operator <<(String& string, const Range<Type>& range) {
         string << '[' << range.getLength() << "]{ ";
 
@@ -83,37 +178,5 @@ namespace ACL {
     export template <typename Type>
     constexpr String& operator <<(String& string, const Shared<Type>& shared) {
         return string << shared.get();
-    }
-
-    export template <typename Type> requires(isInteger<Type>)
-    constexpr String& operator <<(String& string, Type number) {
-        if (!number)
-            return string << '0';
-
-        if (number < 0) {
-            number = -number;
-
-            string << '-';
-        }
-
-        char res[32] = {};
-
-        char* ptr = res;
-
-        while (number) {
-            *ptr = (number % 10) + '0';
-
-            number /= 10;
-
-            ptr += 1;
-        }
-
-        while (ptr != res) {
-            ptr -= 1;
-
-            string.EmplaceBack(*ptr);
-        }
-
-        return string;
     }
 }

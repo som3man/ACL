@@ -483,4 +483,72 @@ namespace ACL {
     std::basic_ostream<Char>& operator <<(std::basic_ostream<Char>& ostream, const String& string) {
         return ostream << string.range();
     }
+
+    export struct PassUntil {
+        struct Number {};
+
+        struct Char {};
+
+        struct CharLow {};
+
+        struct CharHigh {};
+
+        struct Control {};
+
+        char symbol;
+    };
+
+    export constexpr String::View operator >>(String::View view, PassUntil until) noexcept {
+        return view.PopFront([&](char symbol) -> u32 {
+            if (symbol == until.symbol)
+                return 0;
+
+            return 1;
+        });
+    }
+
+    export constexpr String::View operator >>(String::View view, PassUntil::Number) noexcept {
+        return view.PopFront([&](char symbol) -> u32 {
+            if (symbol < '0' && symbol > '9')
+                return 1;
+
+            return 0;
+        });
+    }
+
+    export constexpr String::View operator >>(String::View view, PassUntil::Char) noexcept {
+        return view.PopFront([&](char symbol) -> u32 {
+            if ((symbol < 'a' && symbol > 'z') && (symbol < 'A' && symbol > 'Z'))
+                return 1;
+
+            return 0;
+        });
+    }
+
+    export constexpr String::View operator >>(String::View view, PassUntil::CharLow) noexcept {
+        return view.PopFront([&](char symbol) -> u32 {
+            if (symbol < 'a' && symbol > 'z')
+                return 1;
+
+            return 0;
+        });
+    }
+
+    export constexpr String::View operator >>(String::View view, PassUntil::CharHigh) noexcept {
+        return view.PopFront([&](char symbol) -> u32 {
+            if (symbol < 'A' && symbol > 'Z')
+                return 1;
+
+            return 0;
+        });
+    }
+
+    export constexpr String::View operator >>(String::View view, PassUntil::Control) noexcept {
+        return view.PopFront([&](char symbol) -> u32 {
+            if (symbol > 31)
+                return 1;
+
+            return 0;
+        });
+    }
 }
