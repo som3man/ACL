@@ -185,13 +185,13 @@ namespace ACL {
             return {};
         }
 
-        [[nodiscard]] constexpr View range() const noexcept;
+        [[nodiscard]] constexpr View view() const noexcept;
 
-        [[nodiscard]] constexpr View range(size start, size length) const noexcept;
+        [[nodiscard]] constexpr View view(size start, size length) const noexcept;
 
-        [[nodiscard]] constexpr View rangeTo(size index) const noexcept;
+        [[nodiscard]] constexpr View viewTo(size index) const noexcept;
 
-        [[nodiscard]] constexpr View rangeFrom(size index) const noexcept;
+        [[nodiscard]] constexpr View viewFrom(size index) const noexcept;
 
         [[nodiscard]] constexpr bool operator ==(const View& other) const noexcept;
 
@@ -301,15 +301,15 @@ namespace ACL {
             return {};
         }
 
-        [[nodiscard]] constexpr View range(size start, size length) const noexcept {
+        [[nodiscard]] constexpr View view(size start, size length) const noexcept {
             return data.range(start, length);
         }
 
-        [[nodiscard]] constexpr View rangeTo(size index) const noexcept {
+        [[nodiscard]] constexpr View viewTo(size index) const noexcept {
             return data.rangeTo(index);
         }
 
-        [[nodiscard]] constexpr View rangeFrom(size index) const noexcept {
+        [[nodiscard]] constexpr View viewFrom(size index) const noexcept {
             return data.rangeFrom(index);
         }
 
@@ -415,44 +415,44 @@ namespace ACL {
             array.EmplaceBack('\0');
     }
 
-    constexpr String::View String::range() const noexcept {
+    constexpr String::View String::view() const noexcept {
         return String::View(*this);
     }
 
-    constexpr String::View String::range(size start, size length) const noexcept {
-        return range().range(start, length);
+    constexpr String::View String::view(size start, size length) const noexcept {
+        return view().view(start, length);
     }
 
-    constexpr String::View String::rangeTo(size index) const noexcept {
-        return range().rangeTo(index);
+    constexpr String::View String::viewTo(size index) const noexcept {
+        return view().viewTo(index);
     }
 
-    constexpr String::View String::rangeFrom(size index) const noexcept {
-        return range().rangeFrom(index);
+    constexpr String::View String::viewFrom(size index) const noexcept {
+        return view().viewFrom(index);
     }
 
     constexpr bool String::operator ==(const View& other) const noexcept {
-        return range() == other;
+        return view() == other;
     }
 
     constexpr bool String::operator !=(const View& other) const noexcept {
-        return range() != other;
+        return view() != other;
     }
 
     constexpr bool String::operator >=(const View& other) const noexcept {
-        return range() >= other;
+        return view() >= other;
     }
 
     constexpr bool String::operator <=(const View& other) const noexcept {
-        return range() <= other;
+        return view() <= other;
     }
 
     constexpr bool String::operator >(const View& other) const noexcept {
-        return range() > other;
+        return view() > other;
     }
 
     constexpr bool String::operator <(const View& other) const noexcept {
-        return range() < other;
+        return view() < other;
     }
 
     constexpr String& operator <<(String& string, char symbol) {
@@ -471,7 +471,7 @@ namespace ACL {
     }
 
     export constexpr String& operator <<(String& string, const String& other) {
-        return string << other.range();
+        return string << other.view();
     }
 
     export template <typename Char>
@@ -481,7 +481,7 @@ namespace ACL {
 
     export template <typename Char>
     std::basic_ostream<Char>& operator <<(std::basic_ostream<Char>& ostream, const String& string) {
-        return ostream << string.range();
+        return ostream << string.view();
     }
 
     export struct PassUntil {

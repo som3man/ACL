@@ -48,7 +48,7 @@ namespace ACL::XML {
         data.PopFront([&](char symbol) -> u32 {
             switch (state) {
             case READ_START:
-                if (data.rangeTo(xmlStr.getLength()) != xmlStr) {
+                if (data.viewTo(xmlStr.getLength()) != xmlStr) {
                     error = ParsingError::INVALID_PROLOG;
                     return 0;
                 }
@@ -187,10 +187,10 @@ namespace ACL::XML {
         if (data.front() != str.back() || attributes.getLength() != 2)
             return false;
 
-        if (attributes[0]->name.range() != "a1" || attributes[1]->name.range() != "b2")
+        if (attributes[0]->name.view() != "a1" || attributes[1]->name.view() != "b2")
             return false;
 
-        if (attributes[0]->value || attributes[1]->value.range() != "0")
+        if (attributes[0]->value || attributes[1]->value.view() != "0")
             return false;
 
         str = "attr=\"\"/";
@@ -248,7 +248,7 @@ namespace ACL::XML {
             case READ_STRING:
                 switch (symbol) {
                 case '<':
-                    if (data.range(1, cdataStr.getLength()) == cdataStr) {
+                    if (data.view(1, cdataStr.getLength()) == cdataStr) {
                         state = READ_CDATA;
                         return cdataStr.getLength() + 1;
                     }
@@ -280,7 +280,7 @@ namespace ACL::XML {
                 symIndex += 1;
                 break;
             case READ_CDATA:
-                if (symbol == ']' && data.range(1, 2) == "]>") {
+                if (symbol == ']' && data.view(1, 2) == "]>") {
                     state = READ_STRING;
                     return 3;
                 }
@@ -308,7 +308,7 @@ namespace ACL::XML {
         if (str.back() != data.front())
             return false;
 
-        if (result.range() != "A quick brown fox...")
+        if (result.view() != "A quick brown fox...")
             return false;
 
         str = "amp: &amp; apos: &apos;<";
@@ -323,7 +323,7 @@ namespace ACL::XML {
         if (str.back() != data.front())
             return false;
 
-        if (result.range() != "amp: & apos: \'")
+        if (result.view() != "amp: & apos: \'")
             return false;
 
         str = "String. <![CDATA[<tag></tag> & ]]>other<";
@@ -338,7 +338,7 @@ namespace ACL::XML {
         if (str.back() != data.front())
             return false;
 
-        if (result.range() != "String. <tag></tag> & other")
+        if (result.view() != "String. <tag></tag> & other")
             return false;
 
         return true;
@@ -359,7 +359,7 @@ namespace ACL::XML {
         data.PopFront([&](char symbol) -> u32 {
             switch (state) {
             case CHECK_START:
-                if (data.range(1, 2) != "--") {
+                if (data.view(1, 2) != "--") {
                     error = ParsingError::INVALID_COMMENT;
                     return 0;
                 }
@@ -370,7 +370,7 @@ namespace ACL::XML {
                     state = CHECK_END;
                 break;
             case CHECK_END:
-                if (data.rangeTo(2) == "->")
+                if (data.viewTo(2) == "->")
                     state = EXIT;
                 else
                     state = PASS;
@@ -483,7 +483,7 @@ namespace ACL::XML {
                 }
                 break;
             case CHECK_END:
-                if (data.rangeTo(element.name.getLength()) == element.name) {
+                if (data.viewTo(element.name.getLength()) == element.name) {
                     state = EXIT;
                     return element.name.getLength();
                 }
@@ -512,10 +512,10 @@ namespace ACL::XML {
         if (ReadElement(data, element) != ParsingError::NONE)
             return false;
 
-        if (element.name.range() != "element" || str.back() != data.front())
+        if (element.name.view() != "element" || str.back() != data.front())
             return false;
 
-        if (element.values[0]->string()->range() != "Something.")
+        if (element.values[0]->string()->view() != "Something.")
             return false;
 
         str = "root a=\"\"><!-- comment -->Aa</root>";
@@ -527,13 +527,13 @@ namespace ACL::XML {
         if (ReadElement(data, element) != ParsingError::NONE)
             return false;
 
-        if (element.name.range() != "root" || str.back() != data.front())
+        if (element.name.view() != "root" || str.back() != data.front())
             return false;
 
-        if (element.values[0]->string()->range() != "Aa" || element.values.getLength() != 1)
+        if (element.values[0]->string()->view() != "Aa" || element.values.getLength() != 1)
             return false;
 
-        if (element.attributes.getLength() != 1 || element.attributes[0]->name.range() != "a")
+        if (element.attributes.getLength() != 1 || element.attributes[0]->name.view() != "a")
             return false;
 
         return true;
@@ -614,7 +614,7 @@ namespace ACL::XML {
 
         auto result = Parse(data);
 
-        if (!result || result.root.name.range() != "root" || result.root.values.getLength() != 2)
+        if (!result || result.root.name.view() != "root" || result.root.values.getLength() != 2)
             return false;
 
         if (result.root.attributes.getLength() != 1)
@@ -622,15 +622,15 @@ namespace ACL::XML {
 
         auto attr = result.root.attributes[0];
 
-        if (attr->name.range() != "attr" || attr->value.range() != "10")
+        if (attr->name.view() != "attr" || attr->value.view() != "10")
             return false;
 
-        if (result.root.values[1]->string()->range() != "k <tag></tag>")
+        if (result.root.values[1]->string()->view() != "k <tag></tag>")
             return false;
 
         auto value = result.root.values[0];
 
-        if (value->element()->name.range() != "element" || value->element()->attributes || value->element()->values)
+        if (value->element()->name.view() != "element" || value->element()->attributes || value->element()->values)
             return false;
 
         return true;

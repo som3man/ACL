@@ -82,7 +82,7 @@ namespace ACL {
 
             isNeg = true;
 
-            string = string.rangeFrom(1);
+            string = string.viewFrom(1);
         }
 
         string.PopFront([&](char symbol) -> u32 {
