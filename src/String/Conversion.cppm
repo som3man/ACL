@@ -67,8 +67,8 @@ namespace ACL {
         }
     }
 
-    export template <typename Type> requires(isInteger<Type>)
-    constexpr String::View operator >>(String::View string, Type& number) {
+    export template <typename Char, typename Type> requires(isInteger<Type>)
+    constexpr StrView<Char> operator >>(StrView<Char> string, Type& number) {
         if (!string)
             return string;
 
@@ -85,13 +85,13 @@ namespace ACL {
             string = string.viewFrom(1);
         }
 
-        string.PopFront([&](char symbol) -> u32 {
-            if (symbol < '0' || symbol > '9')
+        string.PopFront([&](Char symbol) -> u32 {
+            if (symbol < Char('0') || symbol > Char('9'))
                 return 0;
 
             number *= 10;
 
-            number += symbol - '0';
+            number += symbol - Char('0');
 
             return 1;
         });

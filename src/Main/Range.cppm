@@ -44,7 +44,7 @@ namespace ACL {
         constexpr ~Range() noexcept = default;
 
         [[nodiscard]] constexpr operator Range<const Type>() const noexcept requires(!isConst<Type>) {
-            return Range<const Type>(data, 0, length);
+            return Range<const Type>(data, length);
         }
 
         constexpr Range(const Range& range, size start, size length) noexcept {

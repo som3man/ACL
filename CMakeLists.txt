@@ -22,6 +22,7 @@ target_sources(ACL PUBLIC FILE_SET CXX_MODULES FILES
     src/String/String.cppm
     src/String/Conversion.cppm
     src/String/Instance.cppm
+    src/String/View.cppm
     src/String/Symbol.cppm
     # MAIN
     src/Main/Main.cppm

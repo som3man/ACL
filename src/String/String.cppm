@@ -5,4 +5,5 @@ export module ACL.String;
 
 export import :Instance;
 export import :Conversion;
+export import :View;
 export import :Symbol;

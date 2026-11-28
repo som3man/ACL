@@ -26,29 +26,29 @@ namespace ACL::XML {
 
         Array<Value> values;
 
-        [[nodiscard]] constexpr Optional<Attribute&> GetAttribute(const String::View& name) {
+        [[nodiscard]] constexpr Optional<Attribute&> GetAttribute(StrView<> name) {
             for (auto& attr : attributes)
-                if (attr.name == name)
+                if (attr.name.view() == name)
                     return attr;
 
             return {};
         }
 
-        [[nodiscard]] constexpr Optional<const Attribute&> GetAttribute(const String::View& name) const {
+        [[nodiscard]] constexpr Optional<const Attribute&> GetAttribute(StrView<> name) const {
             for (auto& attr : attributes)
-                if (attr.name == name)
+                if (attr.name.view() == name)
                     return attr;
 
             return {};
         }
 
-        [[nodiscard]] constexpr Optional<Element&> FindElement(const String::View& name);
+        [[nodiscard]] constexpr Optional<Element&> FindElement(StrView<> name);
 
-        [[nodiscard]] constexpr Optional<const Element&> FindElement(const String::View& name) const;
+        [[nodiscard]] constexpr Optional<const Element&> FindElement(StrView<> name) const;
 
-        [[nodiscard]] constexpr Array<Optional<Element&>> TraceElement(const String::View& name);
+        [[nodiscard]] constexpr Array<Optional<Element&>> TraceElement(StrView<> name);
 
-        [[nodiscard]] constexpr Array<Optional<const Element&>> TraceElement(const String::View& name) const;
+        [[nodiscard]] constexpr Array<Optional<const Element&>> TraceElement(StrView<> name) const;
     };
 
     export class Value {
@@ -60,7 +60,7 @@ namespace ACL::XML {
         template <u32 capacity>
         constexpr Value(const char (&cstring)[capacity]) : data(String(cstring, capacity)) {};
 
-        constexpr Value(const String::View& string) : data(string) {};
+        constexpr Value(StrView<> string) : data(string) {};
 
         constexpr Value(const String& string) : data(string) {};
 
@@ -163,14 +163,14 @@ namespace ACL::XML {
         }
     };
 
-    constexpr Optional<Element&> Element::FindElement(const String::View& name) {
+    constexpr Optional<Element&> Element::FindElement(StrView<> name) {
         for (auto& v : values) {
             if (v.isString())
                 continue;
 
             auto e = v.element();
 
-            if (e->name == name)
+            if (e->name.view() == name)
                 return e;
 
             e = e->FindElement(name);
@@ -182,14 +182,14 @@ namespace ACL::XML {
         return {};
     }
 
-    constexpr Optional<const Element&> Element::FindElement(const String::View& name) const {
+    constexpr Optional<const Element&> Element::FindElement(StrView<> name) const {
         for (auto& v : values) {
             if (v.isString())
                 continue;
 
             auto e = v.element();
 
-            if (e->name == name)
+            if (e->name.view() == name)
                 return e;
 
             e = e->FindElement(name);
@@ -201,7 +201,7 @@ namespace ACL::XML {
         return {};
     }
 
-    constexpr bool TraceElementImpl(Array<Optional<Element&>>& trace, Element& element, const String::View& name) {
+    constexpr bool TraceElementImpl(Array<Optional<Element&>>& trace, Element& element, StrView<> name) {
         trace.EmplaceBack(element);
 
         for (auto& v : element.values) {
@@ -225,7 +225,7 @@ namespace ACL::XML {
         return false;
     }
 
-    constexpr bool TraceElementImpl(Array<Optional<const Element&>>& trace, const Element& element, const String::View& name) {
+    constexpr bool TraceElementImpl(Array<Optional<const Element&>>& trace, const Element& element, StrView<> name) {
         trace.EmplaceBack(element);
 
         for (auto& v : element.values) {
@@ -249,7 +249,7 @@ namespace ACL::XML {
         return false;
     }
 
-    constexpr Array<Optional<Element&>> Element::TraceElement(const String::View& name) {
+    constexpr Array<Optional<Element&>> Element::TraceElement(StrView<> name) {
         Array<Optional<Element&>> trace = {};
 
         TraceElementImpl(trace, *this, name);
@@ -257,7 +257,7 @@ namespace ACL::XML {
         return trace;
     }
 
-    constexpr Array<Optional<const Element&>> Element::TraceElement(const String::View& name) const {
+    constexpr Array<Optional<const Element&>> Element::TraceElement(StrView<> name) const {
         Array<Optional<const Element&>> trace = {};
 
         TraceElementImpl(trace, *this, name);

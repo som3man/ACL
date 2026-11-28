@@ -32,16 +32,16 @@ namespace ACL::XML {
         }
     };
 
-    export [[nodiscard]] constexpr ParsingResult Parse(String::View data) noexcept;
+    export [[nodiscard]] constexpr ParsingResult Parse(StrView<> data) noexcept;
 
-    constexpr ParsingError ReadProlog(String::View& data) {
+    constexpr ParsingError ReadProlog(StrView<>& data) {
         enum {
             READ_START,
             SEARCH_END,
             READ_END
         } state = READ_START;
 
-        constexpr String::View xmlStr = "xml";
+        constexpr StrView<> xmlStr = "xml";
 
         ParsingError error = ParsingError::NONE;
 
@@ -73,9 +73,9 @@ namespace ACL::XML {
     }
 
     consteval bool ReadPrologTest() {
-        String::View str = "xml version=\"1.0\" encoding=\"UTF-8\"?>";
+        StrView<> str = "xml version=\"1.0\" encoding=\"UTF-8\"?>";
 
-        String::View data = str;
+        StrView<> data = str;
 
         if (ReadProlog(data) != ParsingError::NONE)
             return false;
@@ -95,7 +95,7 @@ namespace ACL::XML {
 
     static_assert(ReadPrologTest());
 
-    constexpr ParsingError ReadAttributes(String::View& data, Array<Attribute>& attributes) {
+    constexpr ParsingError ReadAttributes(StrView<>& data, Array<Attribute>& attributes) {
         enum {
             SEARCH_NAME,
             READ_NAME,
@@ -175,9 +175,9 @@ namespace ACL::XML {
     }
 
     consteval auto ReadAttributesTest() {
-        String::View str = " a1=\"\" b2=\"0\">";
+        StrView<> str = " a1=\"\" b2=\"0\">";
 
-        String::View data = str;
+        StrView<> data = str;
 
         Array<Attribute> attributes = {};
 
@@ -210,7 +210,7 @@ namespace ACL::XML {
 
     static_assert(ReadAttributesTest());
 
-    constexpr ParsingError ReadString(String::View& data, String& string) {
+    constexpr ParsingError ReadString(StrView<>& data, String& string) {
         enum {
             READ_STRING,
             READ_ENTITY,
@@ -224,20 +224,20 @@ namespace ACL::XML {
 
         u8 symIndex = 0;
 
-        constexpr String::View cdataStr = "![CDATA[";
+        constexpr StrView<> cdataStr = "![CDATA[";
 
         data.PopFront([&](char symbol) -> u32 {
             switch (state) {
             case CHECK_ENTITY:
-                if (String::View(entity) == "lt")
+                if (StrView<>(entity) == "lt")
                     string.EmplaceBack('<');
-                else if (String::View(entity) == "gt")
+                else if (StrView<>(entity) == "gt")
                     string.EmplaceBack('>');
-                else if (String::View(entity) == "amp")
+                else if (StrView<>(entity) == "amp")
                     string.EmplaceBack('&');
-                else if (String::View(entity) == "apos")
+                else if (StrView<>(entity) == "apos")
                     string.EmplaceBack('\'');
-                else if (String::View(entity) == "quot")
+                else if (StrView<>(entity) == "quot")
                     string.EmplaceBack('\"');
                 else {
                     string.EmplaceBack('&');
@@ -296,9 +296,9 @@ namespace ACL::XML {
     }
 
     consteval bool ReadStringTest() {
-        String::View str = "A quick brown fox...<";
+        StrView<> str = "A quick brown fox...<";
 
-        String::View data = str;
+        StrView<> data = str;
 
         String result = {};
 
@@ -346,7 +346,7 @@ namespace ACL::XML {
 
     static_assert(ReadStringTest());
 
-    constexpr ParsingError ReadComment(String::View& data) {
+    constexpr ParsingError ReadComment(StrView<>& data) {
         enum {
             CHECK_START,
             PASS,
@@ -386,9 +386,9 @@ namespace ACL::XML {
     }
 
     consteval bool ReadCommentTest() {
-        String::View str = "!-- commentary -- <tag></tag> -->";
+        StrView<> str = "!-- commentary -- <tag></tag> -->";
 
-        String::View data = str;
+        StrView<> data = str;
 
         if (ReadComment(data) != ParsingError::NONE)
             return false;
@@ -401,7 +401,7 @@ namespace ACL::XML {
 
     static_assert(ReadCommentTest());
 
-    constexpr ParsingError ReadElement(String::View& data, Element& element) {
+    constexpr ParsingError ReadElement(StrView<>& data, Element& element) {
         enum {
             READ_NAME,
             READ_ATTRIBUTES,
@@ -503,7 +503,7 @@ namespace ACL::XML {
     }
 
     consteval int ReadElementTest() {
-        String::View str = "element>Something.</element>";
+        StrView<> str = "element>Something.</element>";
 
         auto data = str;
 
@@ -541,7 +541,7 @@ namespace ACL::XML {
 
     static_assert(ReadElementTest());
 
-    export constexpr ParsingResult Parse(String::View data) noexcept {
+    export constexpr ParsingResult Parse(StrView<> data) noexcept {
         enum {
             CHECK_TAG,
             SEARCH_PROLOG,
@@ -610,7 +610,7 @@ namespace ACL::XML {
     }
 
     consteval bool ParseTest() {
-        String::View data = "<root attr=\"10\"><element/>k <![CDATA[<tag></tag>]]></root>";
+        StrView<> data = "<root attr=\"10\"><element/>k <![CDATA[<tag></tag>]]></root>";
 
         auto result = Parse(data);
 
